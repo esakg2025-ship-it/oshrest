@@ -16,7 +16,8 @@ const PUB = path.join(__dirname, 'public');
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8' };
 
 // ---------- Supabase helpers ----------
-const sbHeaders = (extra) => Object.assign({ apikey: SB_SERVICE, Authorization: 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json' }, extra || {});
+// Новые ключи sb_secret_… передаются только в apikey; старые JWT-ключи service_role — ещё и в Authorization
+const sbHeaders = (extra) => Object.assign({ apikey: SB_SERVICE, 'Content-Type': 'application/json' }, SB_SERVICE.startsWith('eyJ') ? { Authorization: 'Bearer ' + SB_SERVICE } : {}, extra || {});
 async function sb(method, p, body, extra) {
   const r = await fetch(SB_URL + p, { method, headers: sbHeaders(extra), body: body ? JSON.stringify(body) : undefined });
   const txt = await r.text(); let data = null; try { data = txt ? JSON.parse(txt) : null; } catch (e) { data = txt; }
