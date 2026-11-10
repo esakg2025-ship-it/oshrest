@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ky"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f4e8c"><title>OshRest – демо v2</title>
+<style>
+:root{--bg:#fff;--fg:#17212b;--mut:#5b6876;--br:#1f4e8c;--gr:#2f8f5b;--gd:#c9a227;--gs:#fbf5df;--card:#fff;--ln:#dde3ea;--soft:#eef3f9;--er:#b3261e}
+@media(prefers-color-scheme:dark){:root{--bg:#10161d;--fg:#e8edf2;--mut:#9aa8b6;--br:#6ea1e6;--gr:#5fbf8a;--gd:#e0c25a;--gs:#2b2714;--card:#18212b;--ln:#2a3643;--soft:#1b2631}}
+*{box-sizing:border-box}body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--fg);background:var(--bg);padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+header{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:.4rem;padding:.5rem .8rem;padding-top:calc(.5rem + env(safe-area-inset-top,0px));background:linear-gradient(90deg,#1f4e8c,#2a7f8f);color:#fff;flex-wrap:wrap}
+.brand{font-weight:700;margin-right:auto}header button{background:none;border:0;color:#fff;font:inherit;font-size:.78rem;padding:.3rem .45rem;border-radius:8px;cursor:pointer;opacity:.8;min-height:34px}header button.on{background:rgba(255,255,255,.25);opacity:1}
+.hero{padding:1.2rem 1rem;background:linear-gradient(160deg,#1f4e8c,#2a7f8f 55%,#2f8f5b);color:#fff}.hero h1{margin:0 0 .6rem;font-size:1.45rem}
+input,select{font:inherit;color:inherit;background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:.6rem .75rem;min-height:44px;width:100%}.hero input{color:#17212b;background:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:44px;padding:.5rem 1rem;border:0;border-radius:10px;background:var(--gd);color:#1d1700;font:600 1rem system-ui;text-decoration:none;cursor:pointer}.btn.g{background:transparent;border:1px solid var(--br);color:var(--br)}.btn.gr{background:var(--gr);color:#fff}.btn.s{min-height:34px;padding:.2rem .7rem;font-size:.9rem}.btn:disabled{opacity:.45}
+.wrap{padding:1rem;max-width:1100px;margin:0 auto}.chips{display:flex;gap:.4rem;overflow-x:auto;padding-bottom:.4rem}.chip{flex:0 0 auto;padding:.45rem .85rem;border-radius:999px;border:1px solid var(--ln);background:var(--soft);cursor:pointer;min-height:42px;font:inherit;color:var(--fg)}.chip.on{background:var(--br);color:#fff;border-color:var(--br)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.5rem 0}.cnt{color:var(--mut)}h2{border-left:4px solid var(--gd);padding-left:.55rem;font-size:1.15rem;margin:1.2em 0 .5em}
+.cards{display:grid;gap:1rem;grid-template-columns:1fr}@media(min-width:640px){.cards{grid-template-columns:1fr 1fr}}@media(min-width:960px){.cards{grid-template-columns:repeat(3,1fr)}}
+.card{position:relative;background:var(--card);border:1px solid var(--ln);border-radius:14px;overflow:hidden;cursor:pointer}.img{aspect-ratio:4/3;display:grid;place-items:center;font-size:3rem;color:rgba(255,255,255,.92)}
+.cb{padding:.7rem .9rem .9rem}.cb h3{margin:0 0 .1rem;font-size:1.03rem}.m{color:var(--mut);font-size:.9rem}.pr{display:flex;justify-content:space-between;margin-top:.3rem}.st{color:var(--gd)}.pc{color:var(--gr);font-weight:700}
+.fav{position:absolute;right:.5rem;top:.5rem;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#999;font-size:1.3rem;cursor:pointer}.fav.on{color:#d6336c}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:10;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;height:calc(60px + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);background:var(--card);border-top:1px solid var(--ln)}
+nav button{background:none;border:0;font:inherit;font-size:.7rem;color:var(--mut);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer}nav button span{font-size:1.25rem}nav button.on{color:var(--br);font-weight:700}
+#map{background:var(--soft);border:1px solid var(--ln);border-radius:14px;width:100%}#map text{fill:var(--mut);font-size:7px}
+.dlg{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center}.dlg.open{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:700px;max-height:94vh;overflow:auto;border-radius:18px 18px 0 0}.sp{padding:1rem}.sp h2{margin:.8em 0 .4em}
+.gal{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:3px}.gal .img{flex:0 0 100%;scroll-snap-align:center;cursor:zoom-in}
+.room{border:1px solid var(--ln);border-radius:14px;overflow:hidden;margin:.7rem 0}.rb{padding:.8rem}.rb h3{margin:0}.sp2{display:flex;flex-wrap:wrap;gap:.3rem .8rem;color:var(--mut);font-size:.9rem;margin:.3rem 0}
+.badge{display:inline-block;padding:.05rem .6rem;border-radius:999px;font-size:.8rem;border:1px solid var(--ln);background:var(--soft)}.ok{background:#e1f4e8;color:#145a31}.no{background:#fbe4e2;color:#7a1c16}.go{background:var(--gs);border-color:var(--gd)}
+.tags{display:flex;flex-wrap:wrap;gap:.3rem;padding:0;list-style:none}.tags li{background:var(--soft);padding:.2rem .6rem;border-radius:999px;font-size:.85rem}
+.box{border:2px solid var(--gd);border-radius:14px;padding:.9rem;margin-top:1rem}.box label{display:grid;gap:.2rem;font-size:.9rem;color:var(--mut);margin:.4rem 0}.box .chk{display:flex;align-items:center;gap:.5rem;background:var(--soft);padding:.5rem .7rem;border-radius:10px;color:var(--fg)}.box .chk input{width:auto;min-height:0}.chk small{margin-left:auto}
+.quote{font-weight:700;color:var(--gr);min-height:1.5em}.quote.bad{color:var(--er);font-weight:500;font-size:.95rem}
+.lb{position:fixed;inset:0;z-index:60;background:rgba(5,10,15,.95);display:none;align-items:center;justify-content:center;flex-direction:column}.lb.open{display:flex}.lb .big{width:min(94vw,720px);aspect-ratio:4/3;display:grid;place-items:center;font-size:6rem;border-radius:12px}.lb p{color:#fff}.lb button{position:absolute;background:rgba(255,255,255,.18);color:#fff;border:0;width:48px;height:48px;border-radius:50%;font-size:1.7rem;cursor:pointer}
+.kg{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem}@media(min-width:760px){.kg{grid-template-columns:repeat(5,1fr)}}.kpi{background:var(--soft);border-radius:12px;padding:.7rem;border-top:4px solid var(--gr)}.kpi b{display:block;font-size:1.4rem}
+.bars{display:flex;align-items:flex-end;gap:4px;height:140px;border-bottom:1px solid var(--ln)}.bars div{flex:1;background:var(--br);border-radius:4px 4px 0 0;min-height:2px}.bars.r div{background:var(--gd)}.bl{display:flex;gap:4px;font-size:.62rem;color:var(--mut)}.bl span{flex:1;text-align:center}
+.bk{border-top:1px solid var(--ln);padding:.6rem 0}.empty{text-align:center;padding:2rem 0;color:var(--mut)}footer{text-align:center;color:var(--mut);font-size:.8rem;padding:1rem}
+</style></head><body>
+<header><span class="brand">⛰ OshRest <small>v2 demo</small></span><button data-l="ky">КЫР</button><button data-l="ru">РУС</button><button data-l="en">ENG</button><button id="role"></button></header>
+<section class="hero"><h1 id="tag"></h1><input id="q" type="search" autocomplete="off"></section>
+<main class="wrap" id="main"></main><footer id="ft"></footer>
+<nav id="nav"></nav>
+<div class="dlg" id="dlg"><div class="sheet" id="sheet"></div></div>
+<div class="lb" id="lb"><button id="lx" style="top:12px;right:12px">×</button><button id="lp" style="left:8px;top:50%">‹</button><div class="big" id="lbig"></div><p id="lcap"></p><button id="ln" style="right:8px;top:50%">›</button></div>
+<script>
+(function(){"use strict";
+var U={tag:["Ош облусунун эс алуучу жайлары","Места отдыха Ошской области","Places to relax in Osh Region"],ph:["Жайды издөө…","Найти место…","Search places…"],
+n:[["Издөө","Поиск","Search"],["Карта","Карта","Map"],["Тандалма","Избранное","Favorites"],["Кабинет","Кабинет","Account"],["Дашборд","Дашборд","Dashboard"]],
+all:["Баары","Все","All"],reg:["Бардык райондор","Все районы","All districts"],s1:["Рейтинг боюнча","По рейтингу","By rating"],s2:["Баасы төмөндөн","Сначала дешёвые","Price ↑"],
+found:["Табылды","Найдено","Found"],none:["Эч нерсе табылган жок.","Ничего не найдено.","Nothing found."],nofav:["Тандалма бош.","Избранное пусто.","No favorites."],
+from:["баасы","от","from"],night:["сом/түн","сом/ночь","KGS/night"],call:["Чалуу","Позвонить","Call"],desc:["Сүрөттөмө","Описание","Description"],
+rooms:["Бөлмөлөр жана баалар","Номера и цены","Rooms & prices"],rm:["Бөлмө","Номер","Room"],free:["Бош","Свободно","Available"],busy:["Бош эмес","Занято","Unavailable"],
+inroom:["Бөлмөдөгү шарттар","Условия в номере","In-room amenities"],svc:["Кошумча кызматтар","Доп. услуги","Services"],incl:["баада","включено","included"],
+book:["Брондоо","Бронирование","Booking"],pick:["Бөлмөнү тандаңыз","Выберите номер","Select a room"],d1:["Келүү датасы","Дата заезда","Check-in"],d2:["Кетүү датасы","Дата выезда","Check-out"],
+guests:["Коноктор","Гости","Guests"],phone:["Телефон","Телефон","Phone"],total:["Жалпы сумма","Итого","Total"],nts:["түн","ноч.","nights"],send:["Брондоо","Забронировать","Book now"],
+chk:["Даталарды жана бөлмөнү тандаңыз.","Выберите номер и даты.","Choose a room and dates."],okm:["Брондоо жөнөтүлдү! Кабинетте көрүңүз.","Бронь отправлена! Смотрите в кабинете.","Booking sent! See your account."],
+close:["Жабуу","Закрыть","Close"],cur:["Менин брондоолорум","Мои бронирования","My bookings"],cancel:["Жокко чыгаруу","Отменить","Cancel"],
+st:{new:["Күтүүдө","Ожидает","Pending"],confirmed:["Тастыкталды","Подтверждена","Confirmed"],declined:["Четке кагылды","Отклонена","Declined"],cancelled:["Жокко чыгарылды","Отменена","Cancelled"]},
+k:[["Жайлар","Места","Places"],["Бөлмөлөр","Номера","Rooms"],["Колдонуучулар","Пользователи","Users"],["Брондоолор","Брони","Bookings"],["Киреше, сом","Доход, сом","Revenue, KGS"]],
+mb:["Айлар боюнча брондоолор","Брони по месяцам","Bookings by month"],mr:["Кирешелердин диаграммасы","Доходы по месяцам","Revenue by month"],ad:["Администратор режими","Режим администратора","Admin mode"],
+us:["Турист режими","Режим туриста","Tourist mode"],man:["Брондоолорду башкаруу","Управление бронями","Manage bookings"],ok:["Ырастоо","Подтвердить","Confirm"],no:["Четке кагуу","Отклонить","Decline"],
+ft:["Демо: маалыматтар иллюстративдик, браузерде сакталат (localStorage). Толук система – Django долбоору.","Демо: данные иллюстративные, хранятся в браузере. Полная система – проект Django.","Demo: illustrative data stored in your browser. The full system is the Django project."],
+nm:["Аты","Имя","Name"],top:["Популярдуу жайлар","Популярные места","Popular places"]};
+var CAT={hotel:["🏨",["Мейманкана","Гостиница","Hotel"]],guest:["🏡",["Конок үйү","Гостевой дом","Guest house"]],yurt:["⛺",["Юрта лагери","Юрт-лагерь","Yurt camp"]],base:["🌲",["Эс алуу борбору","Центр отдыха","Recreation center"]],camp:["🔥",["Кемпинг","Кемпинг","Camping"]],mount:["🏔",["Тоолуу база","Горная база","Mountain base"]],hist:["🕌",["Тарыхый жай","Исторические места","Historical"]],sacred:["🕋",["Ыйык жер","Святые места","Sacred place"]],lake:["🏞",["Көл жээги","У озера","Lakeside"]]};
+var REG={osh:["Ош шаары","г. Ош","Osh city"],uzgen:["Өзгөн району","Узгенский р-н","Uzgen"],alay:["Алай району","Алайский р-н","Alay"],chon:["Чоң-Алай району","Чон-Алайский р-н","Chon-Alay"],kara:["Кара-Суу району","Кара-Сууский р-н","Kara-Suu"],kulja:["Кара-Кулжа району","Кара-Кульджинский р-н","Kara-Kulja"]};
+var AM={w:["📶","Wi-Fi","Wi-Fi","Wi-Fi"],ac:["❄","Кондиционер","Кондиционер","A/C"],ht:["🔥","Жылытуу","Отопление","Heating"],tv:["📺","Телевизор","Телевизор","TV"],fr:["🧊","Муздаткыч","Холодильник","Fridge"],ba:["🛁","Жеке ванна жана даараткана","Личная ванная","Private bathroom"],wa:["🚰","Ысык/муздак суу","Горячая/холодная вода","Hot/cold water"],sh:["🚿","Душ","Душ","Shower"],bc:["🌇","Балкон","Балкон","Balcony"],vw:["🪟","Терезеден көрүнүш","Вид из окна","Window view"],ln:["🛏","Таза төшөнчүлөр","Чистое бельё","Fresh linens"],wd:["🚪","Шкаф","Шкаф","Wardrobe"],ds:["🪑","Үстөл жана отургуч","Стол и стул","Desk & chair"]};
+var SV={bf:["🥐","Эртең мененки тамак","Завтрак","Breakfast",350,"p"],ml:["🍲","Түшкү жана кечки тамак","Обед и ужин","Lunch & dinner",600,"p"],pk:["🅿","Унаа токтотуучу жай","Парковка","Parking",0,"b"],tr:["🚐","Трансфер кызматы","Трансфер","Transfer",1500,"b"],ex:["🗺","Экскурсия","Экскурсия","Excursion",2500,"b"],pl:["🏊","Бассейн","Бассейн","Pool",300,"p"],sa:["🧖","Сауна","Сауна","Sauna",1200,"b"],pg:["🎠","Балдар аянтчасы","Детская площадка","Kids playground",0,"b"]};
+var ALL=["w","ac","ht","tv","fr","ba","wa","sh","bc","vw","ln","wd","ds"];
+var RT={hotel:[["Стандарт 1 кишилик",14,1,1,"1 керебет",.7,["w","ac","ht","tv","ba","wa","sh","ln","wd","ds"]],["Стандарт 2 кишилик",20,2,1,"Эки кишилик",1,["w","ac","ht","tv","fr","ba","wa","sh","vw","ln","wd","ds"]],["Люкс",36,3,2,"Аралаш",1.7,ALL],["Үй-бүлөлүк",42,4,3,"Аралаш",1.9,["w","ac","ht","tv","fr","ba","wa","sh","bc","ln","wd"]]],
+guest:[["Бөлмө «Бакча»",16,2,1,"Эки кишилик",1,["w","ht","tv","wa","sh","vw","ln","wd"]],["Үй-бүлөлүк бөлмө",24,4,3,"Аралаш",1.6,["w","ht","tv","fr","ba","wa","sh","ln","wd","ds"]],["Эконом",11,2,2,"Эки өзүнчө",.7,["ht","wa","ln"]]],
+yurt:[["Юрта (2 киши)",18,2,2,"Төшөк",1,["ht","ln","vw"]],["Юрта (4 киши)",28,4,4,"Төшөк",1.6,["ht","ln","vw"]],["Жыгач үй",20,3,2,"Аралаш",1.5,["ht","w","wa","sh","ln","vw","wd"]]],
+base:[["Коттедж 4 кишилик",40,4,2,"Аралаш",1.5,["w","ac","ht","tv","fr","ba","wa","sh","bc","vw","ln","wd"]],["Коттедж 6 кишилик",60,6,3,"Аралаш",2.1,ALL],["Стандарт бөлмө",18,2,1,"Эки кишилик",1,["w","ht","tv","ba","wa","sh","ln","wd"]]],
+mount:[["Жалпы бөлмө (6 орун)",24,6,6,"Эки кабаттуу",.5,["ht","ln"]],["Эки кишилик",14,2,1,"Эки кишилик",1,["ht","wa","ln","vw"]]],
+lake:[["Көл жээгиндеги үйчө",30,4,2,"Аралаш",1.4,["w","ht","fr","ba","wa","sh","bc","vw","ln"]],["Стандарт",16,2,1,"Эки кишилик",1,["ht","wa","sh","vw","ln"]]],
+camp:[["Чатыр орду",12,2,1,"Төшөк",.5,["ln"]],["Жабдылган чатыр",9,2,2,"Төшөк",.9,["ln","ht"]]]};
+var PL=[["sacred","osh","Сулайман-Тоо ыйык тоосу",0,4.9,40.53,72.79,1000,[],"ЮНЕСКОнун Дүйнөлүк мурас тизмесиндеги ыйык тоо, Ош шаарынын борборунда.","09:00–19:00"],
+["hist","uzgen","Өзгөн архитектуралык комплекси",0,4.7,40.77,73.3,800,[],"Орто кылымдардагы минарет жана мавзолейлер комплекси.","09:00–19:00"],
+["yurt","alay","Алай жайлоосундагы юрта лагери",1800,4.8,40.33,73.45,2600,["bf","ml","ex","tr"],"Жайлоодогу юрталар, улуттук тамактар, атчан саякат.","24/7"],
+["yurt","chon","Чоң-Алай өрөөнүндөгү юрта лагери",2200,4.6,39.6,72.75,3000,["bf","ml","ex","tr"],"Тоо маршруттарынын башталышы, гид. Чек ара зонасына уруксат керек болушу мүмкүн.","24/7"],
+["mount","chon","Альпинисттик базалык лагерь",1500,4.4,39.5,72.65,3600,["ml","ex","tr"],"Тоого чыгуучуларга база, шарттар жөнөкөй.","24/7"],
+["hotel","osh","Ош шаарындагы борбордук мейманкана",3200,4.5,40.53,72.8,960,["bf","pk","tr","sa"],"Шаардын борборунда, базарга жана Сулайман-Тоого жакын.","24/7"],
+["hotel","osh","Ош шаарындагы бизнес-мейманкана",4500,4.5,40.55,72.82,960,["bf","ml","pk","tr","pl","sa"],"Конференц-зал, унаа токтотуучу жай, трансфер.","24/7"],
+["guest","osh","Ош конок үйү «Бакчалуу»",1400,4.6,40.51,72.77,960,["bf","ml","pk","ex"],"Үй шартындагы жайгашуу, бакча, улуттук тамак.","24/7"],
+["guest","uzgen","Өзгөндөгү конок үйү",1200,4.3,40.76,73.28,1000,["bf","ml","ex"],"Тарыхый комплекске жөө, үй тамактары.","24/7"],
+["base","kara","Дарыя боюндагы эс алуу борбору",1900,4.3,40.72,72.9,900,["bf","ml","pk","pl","pg","sa"],"Дарыя жээгиндеги коттедждер, мангал аймагы.","08:00–22:00"],
+["lake","kulja","Көл жээгиндеги эс алуу үйү",2400,4.5,40.66,73.07,1000,["bf","ml","pk","sa","pg","ex"],"Көл жээгиндеги үйчөлөр, кайык, балык уулоо.","08:00–22:00"],
+["camp","kulja","Көл жээгиндеги кемпинг аймагы",600,4.2,40.6,73.0,1000,["pk","ml"],"Чатыр орнотуу жайлары, пикник аймагы.","24/7"]];
+var DATA=PL.map(function(a,i){var o={id:i+1,c:a[0],r:a[1],n:a[2],pr:a[3],rt:a[4],la:a[5],lo:a[6],al:a[7],sv:a[8],d:a[9],hr:a[10],ph:"+996 555 00"+(10+i)+"0"+i};
+ o.rooms=(RT[o.c]||[]).map(function(t,j){var pr=Math.round(a[3]*t[5]/50)*50||500;return{id:o.id*10+j,n:t[0],ar:t[1],cap:t[2],bd:t[3],bt:t[4],pr:pr,am:t[6],on:!(o.id%7===3&&j===0)}});
+ if(o.rooms.length)o.pr=Math.min.apply(null,o.rooms.map(function(r){return r.pr}));return o});
+var S={l:0,v:"list",q:"",cat:"",reg:"",sort:"r",fav:[],bk:[],admin:false,pdates:{}};
+var LS=window.localStorage;try{var z=JSON.parse(LS.getItem("osh2")||"null");if(z)for(var k in z)S[k]=z[k]}catch(e){}
+function save(){try{LS.setItem("osh2",JSON.stringify({l:S.l,fav:S.fav,bk:S.bk,admin:S.admin}))}catch(e){}}
+var today=new Date();today.setHours(0,0,0,0);function iso(d){return d.toISOString().slice(0,10)}function add(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x}
+if(!S.bk.length){var rnd=function(i){return(Math.sin(i*9301+49297)*233280%1+1)%1};var rooms=[];DATA.forEach(function(p){p.rooms.forEach(function(r){rooms.push([p,r])})});
+ for(var i=0;i<46;i++){var pr=rooms[Math.floor(rnd(i)*rooms.length)],st=add(today,Math.floor(rnd(i+99)*380)-330),nn=1+Math.floor(rnd(i+7)*4),a=iso(st),b=iso(add(st,nn));
+  if(S.bk.some(function(x){return x.room===pr[1].id&&x.d1<b&&x.d2>a}))continue;
+  S.bk.push({id:i+1,place:pr[0].id,room:pr[1].id,d1:a,d2:b,g:1+Math.floor(rnd(i+3)*pr[1].cap),total:pr[1].pr*nn,st:["confirmed","confirmed","confirmed","new","declined"][Math.floor(rnd(i+5)*5)],u:i%5===0?"me":"u"+i,mo:iso(add(st,-9)).slice(0,7)})}}
+function t(k){var v=U[k];return v[S.l]}
+function nm(o){return o.n}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function norm(s){return String(s).toLowerCase().replace(/ө/g,"о").replace(/ү/g,"у").replace(/ң/g,"н")}
+function hue(id){return"linear-gradient(150deg,hsl("+(200+id*23)%360+",55%,55%),hsl("+(140+id*31)%360+",45%,32%))"}
+function stars(v){var n=Math.round(v);return"★★★★★".slice(0,n)+"☆☆☆☆☆".slice(0,5-n)}
+function money(n){return String(n).replace(/\B(?=(\d{3})+$)/g," ")}
+function P(id){return DATA.filter(function(p){return p.id===id})[0]}
+function busy(room,a,b){return S.bk.some(function(x){return x.room===room&&(x.st==="new"||x.st==="confirmed")&&x.d1<b&&x.d2>a})}
+function filt(){var q=norm(S.q).split(/\s+/).filter(Boolean);var r=DATA.filter(function(p){var s=norm(p.n+" "+p.d);return q.every(function(w){return s.indexOf(w)>-1})&&(!S.cat||p.c===S.cat)&&(!S.reg||p.r===S.reg)});
+ r.sort(function(a,b){return S.sort==="p"?a.pr-b.pr:b.rt-a.rt});return r}
+function card(p){var f=S.fav.indexOf(p.id)>-1;return'<article class="card" data-id="'+p.id+'"><div class="img" style="background:'+hue(p.id)+'">'+CAT[p.c][0]+'</div><button class="fav'+(f?" on":"")+'" data-f="'+p.id+'">♥</button><div class="cb"><h3>'+esc(p.n)+'</h3><div class="m">'+CAT[p.c][1][S.l]+" · "+REG[p.r][S.l]+(p.rooms.length?" · 🛏 "+p.rooms.length:"")+'</div><div class="pr"><span class="st">'+stars(p.rt)+" "+p.rt+'</span><b class="pc">'+(p.pr?t("from")+" "+money(p.pr)+" "+t("night"):"")+"</b></div></div></article>"}
+function bkRow(b,mine){var p=P(b.place),r=p.rooms.filter(function(x){return x.id===b.room})[0];var nn=Math.round((new Date(b.d2)-new Date(b.d1))/864e5);
+ return'<div class="bk"><b>'+esc(p.n)+"</b>"+(r?" · "+esc(r.n):"")+"<br>"+b.d1+" → "+b.d2+" ("+nn+" "+t("nts")+") · "+b.g+" · <b>"+money(b.total)+' сом</b><br><span class="badge '+(b.st==="confirmed"?"ok":b.st==="declined"||b.st==="cancelled"?"no":"go")+'">'+U.st[b.st][S.l]+"</span> "+
+ (mine&&(b.st==="new"||b.st==="confirmed")&&b.d1>=iso(today)?'<button class="btn g s" data-cx="'+b.id+'">'+t("cancel")+"</button>":"")+(!mine&&b.st==="new"?'<button class="btn gr s" data-ok="'+b.id+'">'+t("ok")+'</button> <button class="btn g s" data-no="'+b.id+'">'+t("no")+"</button>":"")+"</div>"}
+function admin(){var cf=S.bk.filter(function(b){return b.st==="confirmed"}),rev=cf.reduce(function(s,b){return s+b.total},0),m=[];
+ for(var i=11;i>=0;i--){var d=new Date(today.getFullYear(),today.getMonth()-i,1);m.push(d.toISOString().slice(0,7))}
+ var bc=m.map(function(k){return S.bk.filter(function(b){return b.mo===k&&b.st!=="declined"&&b.st!=="cancelled"}).length}),rc=m.map(function(k){return cf.filter(function(b){return b.mo===k}).reduce(function(s,b){return s+b.total},0)});
+ var mb=Math.max.apply(null,bc.concat(1)),mr=Math.max.apply(null,rc.concat(1)),cnt={};S.bk.forEach(function(b){cnt[b.place]=(cnt[b.place]||0)+1});
+ var top=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a]}).slice(0,5);var nr=DATA.reduce(function(s,p){return s+p.rooms.length},0);
+ var K=[DATA.length,nr,S.bk.reduce(function(s,b){return s.indexOf(b.u)<0?s.concat(b.u):s},[]).length,S.bk.length,money(rev)];
+ return'<div class="kg">'+K.map(function(v,i){return'<div class="kpi"><small>'+U.k[i][S.l]+"</small><b>"+v+"</b></div>"}).join("")+"</div><h2>"+t("mb")+'</h2><div class="bars">'+bc.map(function(v,i){return'<div title="'+m[i]+": "+v+'" style="height:'+v/mb*100+'%"></div>'}).join("")+'</div><div class="bl">'+m.map(function(x){return"<span>"+x.slice(5)+"</span>"}).join("")+"</div><h2>"+t("mr")+'</h2><div class="bars r">'+rc.map(function(v,i){return'<div title="'+m[i]+": "+money(v)+' сом" style="height:'+v/mr*100+'%"></div>'}).join("")+'</div><div class="bl">'+m.map(function(x){return"<span>"+x.slice(5)+"</span>"}).join("")+"</div><h2>"+t("top")+"</h2>"+
+ top.map(function(id,i){return"<div class='bk'>"+(i+1)+". "+esc(P(+id).n)+" – <b>"+cnt[id]+"</b></div>"}).join("")+"<h2>"+t("man")+"</h2>"+S.bk.slice().sort(function(a,b){return b.id-a.id}).slice(0,12).map(function(b){return bkRow(b,false)}).join("")}
+function mapSvg(r){var W=300,H=190,x=function(o){return 12+(o-72.2)/1.4*(W-24)},y=function(a){return H-12-(a-39.3)/1.6*(H-24)};
+ var s='<svg id="map" viewBox="0 0 300 190"><path d="M0 150L40 120L75 135L110 95L150 125L190 80L230 110L270 70L300 95V190H0Z" fill="rgba(80,130,110,.25)"/>';
+ r.forEach(function(p){s+='<g data-id="'+p.id+'" style="cursor:pointer"><circle cx="'+x(p.lo)+'" cy="'+y(p.la)+'" r="6" fill="#d6336c" stroke="#fff" stroke-width="1.5"/><text x="'+(x(p.lo)+8)+'" y="'+(y(p.la)+2.5)+'">'+esc(p.n.slice(0,22))+"</text></g>"});return s+"</svg>"}
+function render(){document.documentElement.lang=["ky","ru","en"][S.l];document.getElementById("tag").textContent=t("tag");document.getElementById("q").placeholder=t("ph");document.getElementById("ft").textContent=t("ft");
+ var rb=document.getElementById("role");rb.textContent=S.admin?"🛠 "+t("ad"):"👤 "+t("us");[].forEach.call(document.querySelectorAll("header [data-l]"),function(b){b.classList.toggle("on",+b.dataset.l===S.l)});
+ var tabs=[["list","🔍",0],["map","🗺",1],["fav","♥",2],["acc","👤",3]];if(S.admin)tabs.push(["adm","📊",4]);
+ document.getElementById("nav").innerHTML=tabs.map(function(a){return'<button data-v="'+a[0]+'" class="'+(S.v===a[0]?"on":"")+'"><span>'+a[1]+"</span>"+U.n[a[2]][S.l]+"</button>"}).join("");
+ var m=document.getElementById("main"),h="";document.querySelector(".hero").style.display=(S.v==="list"||S.v==="map")?"":"none";
+ if(S.v==="fav"){var fl=DATA.filter(function(p){return S.fav.indexOf(p.id)>-1});h='<div class="cards">'+(fl.map(card).join("")||'<p class="empty">'+t("nofav")+"</p>")+"</div>"}
+ else if(S.v==="acc"){var mine=S.bk.filter(function(b){return b.u==="me"}).sort(function(a,b){return b.id-a.id});h="<h2>"+t("cur")+"</h2>"+(mine.map(function(b){return bkRow(b,true)}).join("")||'<p class="empty">—</p>')}
+ else if(S.v==="adm"&&S.admin){h=admin()}
+ else{var r=filt();h='<div class="chips"><button class="chip'+(S.cat?"":" on")+'" data-c="">'+t("all")+"</button>"+Object.keys(CAT).map(function(k){return'<button class="chip'+(S.cat===k?" on":"")+'" data-c="'+k+'">'+CAT[k][0]+" "+CAT[k][1][S.l]+"</button>"}).join("")+'</div><div class="row2"><select id="sr"><option value="">'+t("reg")+"</option>"+Object.keys(REG).map(function(k){return'<option value="'+k+'"'+(S.reg===k?" selected":"")+">"+REG[k][S.l]+"</option>"}).join("")+'</select><select id="ss"><option value="r">'+t("s1")+'</option><option value="p"'+(S.sort==="p"?" selected":"")+">"+t("s2")+"</option></select></div><p class='cnt'>"+t("found")+": "+r.length+"</p>"+(S.v==="map"?mapSvg(r):'<div class="cards">'+(r.map(card).join("")||'<p class="empty">'+t("none")+"</p>")+"</div>")}
+ m.innerHTML=h}
+var LB={g:[],i:0};function lbShow(){var x=LB.g[LB.i];document.getElementById("lbig").style.background=x.bg;document.getElementById("lbig").textContent=x.e;document.getElementById("lcap").textContent=x.c}
+function lbOpen(g,i){LB.g=g;LB.i=i;document.getElementById("lb").classList.add("open");lbShow()}
+function photos(id,labels){return labels.map(function(l,i){return{bg:hue(id*7+i*3),e:l[0],c:l[1]}})}
+var CUR=null;
+function detail(id){var p=P(id);CUR=p;var f=S.fav.indexOf(id)>-1,wa=p.ph.replace(/\D/g,"");var pp=photos(p.id,[["🏠","Сырткы көрүнүшү"],["🏞","Айлана-чөйрөсү"],["🍽","Ашкана"],["🛋","Ички интерьер"]]);
+ var h='<div class="gal" id="gal0">'+pp.map(function(x,i){return'<div class="img" data-lbg="p" data-i="'+i+'" style="background:'+x.bg+'">'+x.e+"</div>"}).join("")+'</div><div class="sp"><h1 style="margin:.2em 0">'+esc(p.n)+'</h1><div class="m">'+CAT[p.c][1][S.l]+" · "+REG[p.r][S.l]+'</div><p><span class="st">'+stars(p.rt)+"</span> "+p.rt+" · 🕒 "+esc(p.hr)+"</p><p class='m'>GPS: "+p.la+", "+p.lo+"</p>"+(p.pr?"<b class='pc'>"+t("from")+" "+money(p.pr)+" "+t("night")+"</b>":"")+
+ '<p><a class="btn" href="tel:'+p.ph.replace(/\s/g,"")+'">📞 '+t("call")+'</a> <a class="btn gr" href="https://wa.me/'+wa+'" rel="noopener">WhatsApp</a> <a class="btn g" href="https://www.openstreetmap.org/directions?to='+p.la+"%2C"+p.lo+'" rel="noopener">🧭</a> <button class="btn g" data-f="'+id+'">'+(f?"♥":"♡")+"</button></p><h2>"+t("desc")+"</h2><p>"+esc(p.d)+"</p>";
+ if(p.rooms.length){h+="<h2>"+t("rooms")+"</h2>"+p.rooms.map(function(r){var rp=photos(r.id,[["🛏",r.n],["🚿","Санитардык бөлмө"],["🪟","Терезеден көрүнүш"]]);return'<section class="room"><div class="gal">'+rp.map(function(x,i){return'<div class="img" style="aspect-ratio:16/9;background:'+x.bg+'" data-lbg="r'+r.id+'" data-i="'+i+'">'+x.e+"</div>"}).join("")+'</div><div class="rb"><h3>'+esc(r.n)+'</h3><p>'+(r.on?'<span class="badge ok">✔ '+t("free")+"</span>":'<span class="badge no">✖ '+t("busy")+"</span>")+" <b class='pc'>"+money(r.pr)+" сом/"+t("night").split("/")[1]+'</b></p><div class="sp2"><span>📐 '+r.ar+" m²</span><span>👥 "+r.cap+'</span><span>🛏 '+r.bd+" × "+esc(r.bt)+'</span></div><b>'+t("inroom")+'</b><ul class="tags">'+r.am.map(function(a){return"<li>"+AM[a][0]+" "+AM[a][1+S.l]+"</li>"}).join("")+"</ul></div></section>"}).join("")}
+ if(p.sv.length)h+="<h2>"+t("svc")+'</h2><ul class="tags">'+p.sv.map(function(k){var s=SV[k];return"<li>"+s[0]+" "+s[1+S.l]+" · "+(s[4]?money(s[4])+" сом":t("incl"))+"</li>"}).join("")+"</ul>";
+ if(p.rooms.length){h+='<div class="box"><h2 style="margin-top:0">'+t("book")+'</h2><label>'+t("pick")+'<select id="bR"><option value="">—</option>'+p.rooms.filter(function(r){return r.on}).map(function(r){return'<option value="'+r.id+'">'+esc(r.n)+" · "+money(r.pr)+" сом (≤"+r.cap+")</option>"}).join("")+'</select></label><div class="row2"><label>'+t("d1")+'<input id="bA" type="date" min="'+iso(today)+'"></label><label>'+t("d2")+'<input id="bB" type="date" min="'+iso(today)+'"></label></div><div class="row2"><label>'+t("guests")+'<input id="bG" type="number" min="1" value="2"></label><label>'+t("phone")+'<input id="bP" type="tel" value="+996 "></label></div>'+
+  p.sv.map(function(k){var s=SV[k];return'<label class="chk"><input type="checkbox" data-sv="'+k+'"> '+s[0]+" "+s[1+S.l]+"<small>"+(s[4]?money(s[4])+" сом":t("incl"))+"</small></label>"}).join("")+'<div class="quote" id="bQ"></div><button class="btn" id="bS" disabled>'+t("send")+"</button></div>"}
+ h+='<button class="btn g" data-x="1" style="width:100%;margin-top:1rem">'+t("close")+"</button></div>";document.getElementById("sheet").innerHTML=h;document.getElementById("dlg").classList.add("open")}
+function quote(){var p=CUR,rid=+document.getElementById("bR").value,a=document.getElementById("bA").value,b=document.getElementById("bB").value,g=+document.getElementById("bG").value||1,q=document.getElementById("bQ"),bt=document.getElementById("bS");
+ q.className="quote";bt.disabled=true;if(!rid||!a||!b){q.textContent="";return null}var r=p.rooms.filter(function(x){return x.id===rid})[0],nn=Math.round((new Date(b)-new Date(a))/864e5),err="";
+ if(nn<1)err="Эң аз 1 түн тандаңыз.";else if(g>r.cap)err="Бул бөлмө эң көп "+r.cap+" адамга ылайыкташкан.";else if(busy(rid,a,b))err="Бул даталарда бөлмө бош эмес.";
+ if(err){q.className="quote bad";q.textContent=err;return null}var tot=r.pr*nn;[].forEach.call(document.querySelectorAll("[data-sv]:checked"),function(c){var s=SV[c.dataset.sv];tot+=s[4]*(s[5]==="p"?g:1)});
+ q.textContent=t("total")+": "+money(tot)+" сом · "+nn+" "+t("nts");bt.disabled=false;return{rid:rid,a:a,b:b,g:g,tot:tot}}
+document.addEventListener("click",function(e){var T=e.target,b;
+ if(b=T.closest("[data-f]")){e.stopPropagation();var id=+b.dataset.f,i=S.fav.indexOf(id);i>-1?S.fav.splice(i,1):S.fav.push(id);save();var sc=document.getElementById("sheet").scrollTop;render();if(document.getElementById("dlg").classList.contains("open")){detail(id);document.getElementById("sheet").scrollTop=sc}return}
+ if(T.id==="bS"){var q=quote();if(!q)return;S.bk.push({id:Date.now()%1e9,place:CUR.id,room:q.rid,d1:q.a,d2:q.b,g:q.g,total:q.tot,st:"new",u:"me",mo:iso(today).slice(0,7)});save();alert(t("okm"));document.getElementById("dlg").classList.remove("open");S.v="acc";render();return}
+ if(b=T.closest("[data-lbg]")){var key=b.dataset.lbg,arr=[].slice.call(b.parentNode.querySelectorAll("[data-lbg='"+key+"']")).map(function(n){return{bg:n.style.background,e:n.textContent,c:(n.dataset.c||"")}});
+  var labs=key==="p"?["Сырткы көрүнүшү","Айлана-чөйрөсү","Ашкана","Ички интерьер"]:["Бөлмө","Санитардык бөлмө","Терезеден көрүнүш"];arr.forEach(function(x,i){x.c=labs[i]});lbOpen(arr,+b.dataset.i);return}
+ if(T.id==="lx"||T.id==="lb"){document.getElementById("lb").classList.remove("open");return}
+ if(T.id==="lp"){LB.i=(LB.i+LB.g.length-1)%LB.g.length;lbShow();return}if(T.id==="ln"){LB.i=(LB.i+1)%LB.g.length;lbShow();return}
+ if(T.closest("[data-x]")||T.id==="dlg"){document.getElementById("dlg").classList.remove("open");return}
+ if(b=T.closest("[data-cx]")){S.bk.forEach(function(x){if(x.id===+b.dataset.cx)x.st="cancelled"});save();render();return}
+ if(b=T.closest("[data-ok]")){S.bk.forEach(function(x){if(x.id===+b.dataset.ok)x.st="confirmed"});save();render();return}
+ if(b=T.closest("[data-no]")){S.bk.forEach(function(x){if(x.id===+b.dataset.no)x.st="declined"});save();render();return}
+ if(T.id==="role"){S.admin=!S.admin;if(!S.admin&&S.v==="adm")S.v="list";save();render();return}
+ if(b=T.closest("header [data-l]")){S.l=+b.dataset.l;save();render();return}
+ if(b=T.closest("nav [data-v]")){S.v=b.dataset.v;render();window.scrollTo(0,0);return}
+ if(b=T.closest("[data-c]")){S.cat=b.dataset.c;render();return}
+ if(b=T.closest("[data-id]")){detail(+b.dataset.id)}});
+document.addEventListener("change",function(e){var i=e.target.id;if(i==="sr"){S.reg=e.target.value;render()}if(i==="ss"){S.sort=e.target.value;render()}if(["bR","bA","bB","bG"].indexOf(i)>-1||e.target.dataset.sv){if(i==="bA"){var bb=document.getElementById("bB");bb.min=e.target.value;if(bb.value<=e.target.value)bb.value=""}quote()}});
+document.addEventListener("input",function(e){if(e.target.id==="bG")quote()});
+document.getElementById("q").addEventListener("input",function(e){S.q=e.target.value;clearTimeout(window._q);window._q=setTimeout(function(){if(["fav","acc","adm"].indexOf(S.v)>-1)S.v="list";render()},250)});
+var sx=null;document.getElementById("lb").addEventListener("touchstart",function(e){sx=e.touches[0].clientX},{passive:true});document.getElementById("lb").addEventListener("touchend",function(e){if(sx===null)return;var d=e.changedTouches[0].clientX-sx;if(Math.abs(d)>50){LB.i=(LB.i+(d<0?1:LB.g.length-1))%LB.g.length;lbShow()}sx=null});
+document.addEventListener("keydown",function(e){var l=document.getElementById("lb");if(e.key==="Escape"){l.classList.remove("open");document.getElementById("dlg").classList.remove("open")}if(l.classList.contains("open")){if(e.key==="ArrowLeft")document.getElementById("lp").click();if(e.key==="ArrowRight")document.getElementById("ln").click()}});
+render();})();
+</script></body></html>

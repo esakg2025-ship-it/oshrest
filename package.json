@@ -1,0 +1,9 @@
+{
+  "name": "oshrest",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OshRest — места отдыха Ошской области: сайт туристов, панель владельцев, панель главного админа",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}
