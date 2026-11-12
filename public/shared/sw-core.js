@@ -1,6 +1,6 @@
 /* Общий service worker: оболочка приложения работает офлайн. Данные Supabase и /api не кэшируются. */
-const VER = 'osh-v1', SHELL = self.SHELL || [];
-self.addEventListener('install', e => { e.waitUntil(caches.open(VER).then(c => c.addAll(SHELL.concat(['/shared/style.css', '/shared/theme-init.js', '/shared/catalog.js', '/shared/core.js', '/icons/icon-192.png']))).catch(() => {}).then(() => self.skipWaiting())); });
+const VER = 'osh-v2', SHELL = self.SHELL || [];
+self.addEventListener('install', e => { e.waitUntil(caches.open(VER).then(c => c.addAll(SHELL.concat(['/shared/style.css', '/shared/icons.css', '/shared/editor.js', '/shared/theme-init.js', '/shared/catalog.js', '/shared/core.js', '/icons/icon-192.png']))).catch(() => {}).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VER).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 const CDN = /(cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|unpkg\.com)$/;
 self.addEventListener('fetch', e => {

@@ -11,11 +11,12 @@ vm.runInContext(src.slice(a, b) + ';this.R={CAT,REG,AM,SV,RT,PL}', ctx);
 const { CAT, REG, AM, SV, RT, PL } = ctx.R;
 
 const root = path.join(__dirname, '..');
+const ICON = { hotel: 'building', guest: 'home', yurt: 'tent', base: 'trees', camp: 'flame', mount: 'mountain', hist: 'landmark', sacred: 'sparkle', lake: 'waves' };
 const catalog = {
-  cats: Object.fromEntries(Object.entries(CAT).map(([k, v]) => [k, [v[0], v[1]]])),
+  cats: Object.fromEntries(Object.entries(CAT).map(([k, v]) => [k, [ICON[k] || 'pin', v[1]]])),
   regs: REG,
-  am: Object.fromEntries(Object.entries(AM).map(([k, v]) => [k, [v[0], v[1], v[2], v[3]]])),
-  sv: Object.fromEntries(Object.entries(SV).map(([k, v]) => [k, { i: v[0], l: [v[1], v[2], v[3]], p: v[4], per: v[5] }])),
+  am: Object.fromEntries(Object.entries(AM).map(([k, v]) => [k, [v[1], v[2], v[3]]])),
+  sv: Object.fromEntries(Object.entries(SV).map(([k, v]) => [k, { l: [v[1], v[2], v[3]], p: v[4], per: v[5] }])),
 };
 fs.writeFileSync(path.join(root, 'public/shared/catalog.js'), 'window.CATALOG=' + JSON.stringify(catalog) + ';\n');
 

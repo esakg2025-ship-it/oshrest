@@ -27,16 +27,16 @@
     theme: ['Тема', 'Тема', 'Theme'], newreq: ['Жаңы билдирүү', 'Новая заявка', 'New request'], ago: ['азыр', 'только что', 'just now']
   });
   const cats = () => (window.CATALOG && CATALOG.cats) || {};
-  OSH.catIcon = k => (cats()[k] || ['📍'])[0];
+  OSH.catIcon = k => '<i class=i-' + (cats()[k] || ['pin'])[0] + '></i>';
   OSH.catName = k => (cats()[k] ? cats()[k][1][L] : k);
   OSH.regName = k => (CATALOG.regs[k] ? CATALOG.regs[k][L] : k);
-  OSH.amName = k => (CATALOG.am[k] ? CATALOG.am[k][0] + ' ' + CATALOG.am[k][1 + L] : k);
-  OSH.svName = k => (CATALOG.sv[k] ? CATALOG.sv[k].i + ' ' + CATALOG.sv[k].l[L] : k);
+  OSH.amName = k => (CATALOG.am[k] ? CATALOG.am[k][L] : k);
+  OSH.svName = k => (CATALOG.sv[k] ? CATALOG.sv[k].l[L] : k);
 
   // ---------- утилиты ----------
   const esc = OSH.esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   OSH.money = n => String(Math.round(+n || 0)).replace(/\B(?=(\d{3})+$)/g, ' ');
-  OSH.stars = v => { const n = Math.round(v || 0); return '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n); };
+  OSH.stars = v => { const n = Math.round(v || 0); return ''.slice(0, n) + ''.slice(0, 5 - n); };
   const hash = s => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); };
   OSH.grad = (id, i) => { const h = hash(String(id)) + (i || 0) * 47; return 'linear-gradient(150deg,hsl(' + (h % 360) + ',58%,52%),hsl(' + ((h * 7 + 60) % 360) + ',50%,30%))'; };
   OSH.photoStyle = (p, i, emoji) => { const u = p.photos && p.photos[i]; return u ? 'background-image:url(' + esc(u) + ')' : 'background:' + OSH.grad(p.id, i); };
@@ -52,7 +52,7 @@
   OSH.telLink = p => 'tel:' + String(p || '').replace(/[^\d+]/g, '');
 
   // ---------- тема ----------
-  function setTheme(v) { document.documentElement.setAttribute('data-theme', v); ls.set('osh-theme', v); const m = $('meta[name=theme-color]'); if (m) m.content = v === 'dark' ? '#0a1220' : '#2f6bff'; $$('[data-act=theme]').forEach(b => b.textContent = v === 'dark' ? '☀️' : '🌙'); }
+  function setTheme(v) { document.documentElement.setAttribute('data-theme', v); ls.set('osh-theme', v); const m = $('meta[name=theme-color]'); if (m) m.content = v === 'dark' ? '#0a1220' : '#2f6bff'; $$('[data-act=theme]').forEach(b => b.innerHTML = v === 'dark' ? '<i class=i-sun></i>' : '<i class=i-moon></i>'); }
   OSH.toggleTheme = function (ev) {
     const cur = document.documentElement.getAttribute('data-theme'), nx = cur === 'dark' ? 'light' : 'dark';
     if (ev && ev.clientX != null) { document.documentElement.style.setProperty('--tx', ev.clientX + 'px'); document.documentElement.style.setProperty('--ty', ev.clientY + 'px'); }
@@ -66,14 +66,14 @@
   OSH.toast = function (o) {
     let box = $('#toasts'); if (!box) { box = document.createElement('div'); box.id = 'toasts'; document.body.appendChild(box); }
     const el = document.createElement('div'); el.className = 'toast ' + (o.type || '');
-    el.innerHTML = '<span class="ti">' + (o.icon || 'ℹ️') + '</span><div style="flex:1">' + (o.title ? '<b>' + esc(o.title) + '</b>' : '') + (o.text ? '<span class="m">' + esc(o.text) + '</span>' : '') + '</div><button class="lens sm ic" aria-label="close">×</button>';
+    el.innerHTML = '<div style="flex:1">' + (o.title ? '<b>' + esc(o.title) + '</b>' : '') + (o.text ? '<span class="m">' + esc(o.text) + '</span>' : '') + '</div><button class="lens sm ic" aria-label="close">×</button>';
     const kill = () => { el.classList.add('out'); setTimeout(() => el.remove(), 300); };
     el.querySelector('button').onclick = e => { e.stopPropagation(); kill(); };
     if (o.onclick) { el.style.cursor = 'pointer'; el.onclick = () => { kill(); o.onclick(); }; }
     box.appendChild(el); setTimeout(kill, o.ms || 6000);
     try { if (o.vibrate && navigator.vibrate) navigator.vibrate([80, 40, 80]); } catch (e) {}
   };
-  OSH.err = m => OSH.toast({ type: 'err', icon: '⚠️', text: m || t('neterr') });
+  OSH.err = m => OSH.toast({ type: 'err', text: m || t('neterr') });
 
   // ---------- окно ----------
   OSH.sheet = function (html, wide) {
@@ -95,20 +95,39 @@
     show(); lb.classList.add('open');
   };
 
+  // ---------- медиа: фото и видео ----------
+  OSH.ytId = u => { const m = /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/.exec(u || ''); return m ? m[1] : null; };
+  OSH.videoTag = (u, cls) => { const y = OSH.ytId(u); return y ? '<iframe class="' + (cls || '') + '" src="https://www.youtube-nocookie.com/embed/' + y + '" title="video" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>' : '<video class="' + (cls || '') + '" src="' + esc(u) + '" controls playsinline preload="metadata"></video>'; };
+  // Галерея: фото (кликабельные, data-gi) + видео. place=true -> заглушка с иконкой категории, если медиа нет
+  OSH.gallery = function (e, o) {
+    o = o || {}; const ph = e.photos || [], vd = e.videos || [], ar = o.ratio || '16/10';
+    let h = ph.map((u, i) => '<div class="ph" data-gi="' + i + '" style="aspect-ratio:' + ar + ';background-image:url(' + esc(u) + ')"></div>').join('') + vd.map(u => '<div class="ph vid" style="aspect-ratio:' + ar + '">' + OSH.videoTag(u) + '</div>').join('');
+    if (!h && o.cat) h = '<div class="ph" style="aspect-ratio:' + ar + ';background:' + OSH.grad(e.id, 0) + '">' + OSH.catIcon(o.cat) + '</div>';
+    return h ? '<div class="gal">' + h + '</div>' : '';
+  };
+  OSH.uploadVideo = async function (file, folder) {
+    if (file.size > 50 * 1024 * 1024) throw new Error(t('vid_big'));
+    const ext = (/\.(mp4|webm|mov|m4v)$/i.exec(file.name) || [, 'mp4'])[1].toLowerCase();
+    const path = (folder || 'misc') + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
+    const { error } = await OSH.sb.storage.from('photos').upload(path, file, { contentType: file.type || 'video/mp4', cacheControl: '31536000' });
+    if (error) throw error; return OSH.sb.storage.from('photos').getPublicUrl(path).data.publicUrl;
+  };
+  OSH.addT({ vid_big: ['Видео 50 МБдан ашпашы керек', 'Видео должно быть не больше 50 МБ', 'Video must be 50 MB or smaller'] });
+
   // ---------- PWA ----------
   let dip = null;
   window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); dip = e; $$('.install').forEach(b => b.classList.add('show')); });
   window.addEventListener('appinstalled', () => { dip = null; $$('.install').forEach(b => b.classList.remove('show')); });
   const standalone = () => matchMedia('(display-mode:standalone)').matches || navigator.standalone;
-  OSH.install = async function () { if (dip) { dip.prompt(); await dip.userChoice; dip = null; $$('.install').forEach(b => b.classList.remove('show')); } else OSH.toast({ icon: '📲', text: t('iosinst'), ms: 9000 }); };
+  OSH.install = async function () { if (dip) { dip.prompt(); await dip.userChoice; dip = null; $$('.install').forEach(b => b.classList.remove('show')); } else OSH.toast({ text: t('iosinst'), ms: 9000 }); };
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone();
 
   // ---------- шапка ----------
   OSH.header = function (brand, sub, extra) {
-    return '<header class="top"><div class="brand"><span class="lg">⛰</span><span>' + esc(brand) + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span></div>' + (extra || '') +
-      '<button class="lens sm install' + (isIOS ? ' show' : '') + '" data-act="install">📲 <span class="hide-s">' + t('install') + '</span></button>' +
+    return '<header class="top"><div class="brand"><span class="lg"><i class=i-mountain></i></span><span>' + esc(brand) + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span></div>' + (extra || '') +
+      '<button class="lens sm install' + (isIOS ? ' show' : '') + '" data-act="install"><i class=i-download></i> <span class="hide-s">' + t('install') + '</span></button>' +
       '<button class="lens sm ic" data-act="lang" aria-label="language" title="KY / RU / EN">' + ['KY', 'RU', 'EN'][L] + '</button>' +
-      '<button class="lens sm ic" data-act="theme" aria-label="theme">' + (document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙') + '</button></header>';
+      '<button class="lens sm ic" data-act="theme" aria-label="theme">' + (document.documentElement.getAttribute('data-theme') === 'dark' ? '<i class=i-sun></i>' : '<i class=i-moon></i>') + '</button></header>';
   };
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-act]'); if (!b) return;
@@ -148,7 +167,7 @@
     const root = $('#app');
     const draw = () => {
       root.innerHTML = '<div class="aurora"><i></i><i></i><i></i></div>' + OSH.header('OshRest', o.badge) +
-        '<div class="auth"><form class="authbox" id="af" autocomplete="on"><div style="font-size:2.4rem">' + o.icon + '</div><h1>' + esc(o.title) + '</h1><p class="sub">' + esc(o.sub) + '</p>' +
+        '<div class="auth"><form class="authbox" id="af" autocomplete="on"><div style="font-size:2.4rem;color:var(--pri)"><i class=i-' + o.icon + '></i></div><h1>' + esc(o.title) + '</h1><p class="sub">' + esc(o.sub) + '</p>' +
         (o.register ? '<div class="seg"><button type="button" data-m="in" class="' + (mode === 'in' ? 'on' : '') + '">' + t('login') + '</button><button type="button" data-m="up" class="' + (mode === 'up' ? 'on' : '') + '">' + t('a_reg') + '</button></div>' : '') +
         (mode === 'up' ? '<label class="f">' + t('name') + '<input id="an" required maxlength="80" autocomplete="name"></label>' : '') +
         '<label class="f">' + o.loginLabel + '<input id="al" required autocomplete="username" autocapitalize="none" inputmode="' + (o.register ? 'email' : 'text') + '" placeholder="' + esc(o.loginPh || '') + '"></label>' +
@@ -172,7 +191,7 @@
     const forgot = () => {
       const s = OSH.sheet('<div class="sp"><h2 style="margin-top:2rem">' + t('a_forgot') + '</h2><p class="m">' + t('a_forgot_d') + '</p><label class="f">' + o.loginLabel + '<input id="fl" autocapitalize="none"></label><label class="f">' + t('a_note') + '<input id="fn" maxlength="200"></label><div class="ferr" id="fe"></div><button class="lens pri block" id="fs">' + t('a_send') + '</button></div>');
       $('#fl', s).value = ($('#al') || {}).value || '';
-      $('#fs', s).onclick = async () => { try { await OSH.api('/api/forgot', 'POST', { login: $('#fl', s).value, note: $('#fn', s).value }); OSH.closeSheet(); OSH.toast({ type: 'ok', icon: '✅', text: t('a_sent') }); } catch (e) { $('#fe', s).textContent = e.message; } };
+      $('#fs', s).onclick = async () => { try { await OSH.api('/api/forgot', 'POST', { login: $('#fl', s).value, note: $('#fn', s).value }); OSH.closeSheet(); OSH.toast({ type: 'ok', text: t('a_sent') }); } catch (e) { $('#fe', s).textContent = e.message; } };
     };
     draw(); OSH.rerender = draw;
   }
@@ -190,7 +209,7 @@
     document.addEventListener('DOMContentLoaded', async () => {
       const root = $('#app'), cfg = window.OSH_CFG || {};
       if ('serviceWorker' in navigator) navigator.serviceWorker.register(o.sw, { scope: o.scope }).catch(() => {});
-      if (!cfg.url || !cfg.key || !window.supabase) { root.innerHTML = '<div class="auth"><div class="authbox"><h1>⚙️</h1><p>' + t('nocfg') + '</p></div></div>'; return; }
+      if (!cfg.url || !cfg.key || !window.supabase) { root.innerHTML = '<div class="auth"><div class="authbox"><p>' + t('nocfg') + '</p></div></div>'; return; }
       OSH.sb = supabase.createClient(cfg.url, cfg.key, { auth: { storageKey: 'osh-auth-' + o.site, persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } });
       OSH.logout = async () => { await OSH.sb.auth.signOut(); location.reload(); };
       const enter = async () => {
@@ -214,18 +233,18 @@
   OSH.reqHtml = function (r, ctx) {
     const p = ctx.places[r.place_id] || { name: '—' }, rm = r.room_id && ctx.rooms[r.room_id];
     const stc = r.status === 'confirmed' ? 'ok' : (r.status === 'declined' || r.status === 'cancelled') ? 'no' : r.status === 'answered' ? '' : 'new';
-    let h = '<div class="rq' + (ctx.fresh && ctx.fresh.has(r.id) ? ' fresh' : '') + '" data-rid="' + r.id + '"><div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap"><b>' + (r.kind === 'booking' ? '🛏 ' : '💬 ') + esc(p.name) + '</b><span class="badge ' + stc + '">' + t('s_' + r.status) + '</span><span class="m" style="margin-left:auto">' + OSH.ftime(r.created_at) + '</span></div>';
-    if (ctx.mode !== 'tourist') h += '<div>👤 <b>' + esc(r.tourist_name || '—') + '</b> · <a href="' + OSH.telLink(r.tourist_phone) + '">' + esc(r.tourist_phone || '') + '</a></div>';
-    if (r.kind === 'booking') h += '<div class="m">' + (rm ? esc(rm.name) + ' · ' : '') + OSH.fdate(r.d1) + ' → ' + OSH.fdate(r.d2) + ' (' + OSH.nights(r.d1, r.d2) + ' ' + t('nights') + ') · 👥 ' + r.guests + ' · <b class="pc">' + OSH.money(r.total) + ' ' + t('som') + '</b></div>' + ((r.services || []).length ? '<ul class="tags">' + r.services.map(k => '<li>' + esc(OSH.svName(k)) + '</li>').join('') + '</ul>' : '');
-    if (r.message) h += '<div style="margin:.2rem 0">💬 ' + esc(r.message) + '</div>';
+    let h = '<div class="rq' + (ctx.fresh && ctx.fresh.has(r.id) ? ' fresh' : '') + '" data-rid="' + r.id + '"><div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap"><b>' + (r.kind === 'booking' ? '' : '') + esc(p.name) + '</b><span class="badge ' + stc + '">' + t('s_' + r.status) + '</span><span class="m" style="margin-left:auto">' + OSH.ftime(r.created_at) + '</span></div>';
+    if (ctx.mode !== 'tourist') h += '<div><b>' + esc(r.tourist_name || '—') + '</b> · <a href="' + OSH.telLink(r.tourist_phone) + '">' + esc(r.tourist_phone || '') + '</a></div>';
+    if (r.kind === 'booking') h += '<div class="m">' + (rm ? esc(rm.name) + ' · ' : '') + OSH.fdate(r.d1) + ' → ' + OSH.fdate(r.d2) + ' (' + OSH.nights(r.d1, r.d2) + ' ' + t('nights') + ') · ' + r.guests + ' · <b class="pc">' + OSH.money(r.total) + ' ' + t('som') + '</b></div>' + ((r.services || []).length ? '<ul class="tags">' + r.services.map(k => '<li>' + esc(OSH.svName(k)) + '</li>').join('') + '</ul>' : '');
+    if (r.message) h += '<div style="margin:.2rem 0">' + esc(r.message) + '</div>';
     if (r.reply) h += '<div class="panel" style="margin:.4rem 0;padding:.5rem .7rem"><b>' + t('reply') + ':</b> ' + esc(r.reply) + '</div>';
     h += '<div class="acts">';
     if (ctx.mode === 'tourist') {
       if ((r.status === 'new' || r.status === 'confirmed') && r.kind === 'booking' && r.d1 >= OSH.today()) h += '<button class="lens sm" data-cx="' + r.id + '">' + t('cancel') + '</button>';
-      if (p.phone) h += '<a class="lens sm" href="' + OSH.telLink(p.phone) + '">📞 ' + t('call') + '</a><a class="lens sm ok" target="_blank" rel="noopener" href="' + OSH.waLink(p.whatsapp || p.phone) + '">WhatsApp</a>';
+      if (p.phone) h += '<a class="lens sm" href="' + OSH.telLink(p.phone) + '">' + t('call') + '</a><a class="lens sm ok" target="_blank" rel="noopener" href="' + OSH.waLink(p.whatsapp || p.phone) + '">WhatsApp</a>';
     } else {
-      if (r.kind === 'booking' && r.status === 'new') h += '<button class="lens sm ok" data-ok="' + r.id + '">✔ ' + t('confirm') + '</button><button class="lens sm bad" data-no="' + r.id + '">✖ ' + t('decline') + '</button>';
-      h += '<button class="lens sm" data-rp="' + r.id + '">💬 ' + t('reply') + '</button><a class="lens sm" href="' + OSH.telLink(r.tourist_phone) + '">📞</a><a class="lens sm ok" target="_blank" rel="noopener" href="' + OSH.waLink(r.tourist_phone) + '">WhatsApp</a>';
+      if (r.kind === 'booking' && r.status === 'new') h += '<button class="lens sm ok" data-ok="' + r.id + '">' + t('confirm') + '</button><button class="lens sm bad" data-no="' + r.id + '">' + t('decline') + '</button>';
+      h += '<button class="lens sm" data-rp="' + r.id + '">' + t('reply') + '</button><a class="lens sm" href="' + OSH.telLink(r.tourist_phone) + '"></a><a class="lens sm ok" target="_blank" rel="noopener" href="' + OSH.waLink(r.tourist_phone) + '">WhatsApp</a>';
     }
     return h + '</div></div>';
   };

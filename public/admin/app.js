@@ -22,27 +22,27 @@
 
   OSH.start({
     site: 'admin', role: ['admin'], sw: '/admin/sw.js', scope: '/admin/',
-    auth: { site: 'admin', icon: '🛡️', badge: 'Админ', title: t('ad_title'), sub: t('ad_sub'), register: false, forgot: false, loginLabel: t('ad_login'), loginPh: 'admin', foot: '' },
+    auth: { site: 'admin', badge: 'Админ', title: t('ad_title'), sub: t('ad_sub'), register: false, forgot: false, loginLabel: t('ad_login'), loginPh: 'admin', foot: '' },
     start: boot
   });
 
   async function load() {
     const [pr, pl, rm, rq, pw] = await Promise.all([
-      sb().from('profiles').select('*').order('created_at', { ascending: false }), sb().from('places').select('*').order('created_at'), sb().from('rooms').select('id,place_id,name,price'),
+      sb().from('profiles').select('*').order('created_at', { ascending: false }), sb().from('places').select('*').order('created_at'), sb().from('rooms').select('*'),
       sb().from('requests').select('*').order('created_at', { ascending: false }).limit(3000), sb().from('password_requests').select('*').order('created_at', { ascending: false }).limit(200)]);
     S.profiles = pr.data || []; S.places = pl.data || []; S.rooms = rm.data || []; S.reqs = rq.data || []; S.pw = pw.data || [];
   }
   async function boot() {
     $('#app').innerHTML = '<div class="aurora"><i></i><i></i><i></i></div><div class="auth"><span class="spin"></span></div>';
     await load();
-    OSH.watch('password_requests', null, p => { if (p.eventType === 'INSERT') { S.pw.unshift(p.new); OSH.toast({ type: 'new', icon: '🔐', title: t('pw_for'), text: p.new.login, onclick: () => go('pw'), ms: 12000, vibrate: true }); head(); if (S.v === 'pw') draw(); } else if (p.new) { const i = S.pw.findIndex(x => x.id === p.new.id); if (i > -1) S.pw[i] = p.new; head(); if (S.v === 'pw') draw(); } });
+    OSH.watch('password_requests', null, p => { if (p.eventType === 'INSERT') { S.pw.unshift(p.new); OSH.toast({ type: 'new', title: t('pw_for'), text: p.new.login, onclick: () => go('pw'), ms: 12000, vibrate: true }); head(); if (S.v === 'pw') draw(); } else if (p.new) { const i = S.pw.findIndex(x => x.id === p.new.id); if (i > -1) S.pw[i] = p.new; head(); if (S.v === 'pw') draw(); } });
     OSH.watch('requests', null, p => { if (p.eventType === 'INSERT') { S.reqs.unshift(p.new); } else if (p.new) { const i = S.reqs.findIndex(x => x.id === p.new.id); if (i > -1) S.reqs[i] = p.new; } if (S.v === 'dash' || S.v === 'rq') draw(); });
     OSH.rerender = render; render();
   }
-  const tabs = [['dash', '📊', 'n_dash'], ['own', '🔑', 'n_own'], ['pl', '🏨', 'n_pl'], ['rq', '🧾', 'n_rq'], ['us', '👥', 'n_us'], ['pw', '🔐', 'n_pw']];
+  const tabs = [['dash', '<i class=i-chart></i>', 'n_dash'], ['own', '<i class=i-key></i>', 'n_own'], ['pl', '<i class=i-building></i>', 'n_pl'], ['rq', '<i class=i-receipt></i>', 'n_rq'], ['us', '<i class=i-users></i>', 'n_us'], ['pw', '<i class=i-lock></i>', 'n_pw']];
   function render() {
     document.body.classList.add('hasnav');
-    $('#app').innerHTML = '<div class="aurora"><i></i><i></i><i></i></div>' + OSH.header('OshRest', 'Админ', '<button class="lens sm" id="lo">⎋ <span class="hide-s">' + t('me_out') + '</span></button>') + '<main class="wrap view" id="main"></main>' +
+    $('#app').innerHTML = '<div class="aurora"><i></i><i></i><i></i></div>' + OSH.header('OshRest', 'Админ', '<button class="lens sm" id="lo"><span class="hide-s">' + t('me_out') + '</span></button>') + '<main class="wrap view" id="main"></main>' +
       '<nav class="tabs">' + tabs.map(a => '<button data-v="' + a[0] + '" class="' + (S.v === a[0] ? 'on' : '') + '"><span>' + a[1] + '</span>' + t(a[2]) + '</button>').join('') + '</nav>';
     $('#lo').onclick = OSH.logout; head(); draw();
   }
@@ -67,8 +67,8 @@
   const gen = n => { const a = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789', u = new Uint32Array(n); crypto.getRandomValues(u); return Array.from(u, x => a[x % a.length]).join(''); };
   function drawOwn() {
     const o = owners(), pc = id => S.places.filter(p => p.owner_id === id).length;
-    $('#main').innerHTML = '<h2 class="sec">' + t('n_own') + '</h2><div class="panel"><h3 style="margin-top:0">＋ ' + t('newown') + '</h3><form id="of"><div class="g2"><label class="f">' + t('o_login') + '<input id="ol" required pattern="[a-zA-Z0-9._-]{3,40}" autocapitalize="none"></label><label class="f">' + t('pass') + '<div class="sw"><input id="op" required minlength="6" value="' + gen(10) + '"><button type="button" class="lens sm" id="og">⟳</button></div></label></div><div class="g2"><label class="f">' + t('name') + '<input id="on" maxlength="80"></label><label class="f">' + t('phone') + '<input id="oph" type="tel"></label></div><button class="lens pri" type="submit">' + t('create') + '</button><div class="ferr" id="oe"></div></form><div id="ocred"></div></div>' +
-      '<div class="panel tw"><table class="t"><thead><tr><th>' + t('name') + '</th><th>Login</th><th>' + t('n_pl') + '</th><th></th></tr></thead><tbody>' + (o.map(p => '<tr><td>' + esc(p.full_name || '—') + '<div class="m">' + esc(p.phone || '') + '</div></td><td><code>' + esc(p.login || '') + '</code></td><td>' + pc(p.id) + '</td><td style="white-space:nowrap"><button class="lens sm" data-pw="' + p.id + '">🔑</button> <button class="lens sm bad" data-du="' + p.id + '">✖</button></td></tr>').join('') || '<tr><td colspan="4" class="empty">' + t('noitems') + '</td></tr>') + '</tbody></table></div>';
+    $('#main').innerHTML = '<h2 class="sec">' + t('n_own') + '</h2><div class="panel"><h3 style="margin-top:0">' + t('newown') + '</h3><form id="of"><div class="g2"><label class="f">' + t('o_login') + '<input id="ol" required pattern="[a-zA-Z0-9._-]{3,40}" autocapitalize="none"></label><label class="f">' + t('pass') + '<div class="sw"><input id="op" required minlength="6" value="' + gen(10) + '"><button type="button" class="lens sm" id="og"><i class=i-refresh></i></button></div></label></div><div class="g2"><label class="f">' + t('name') + '<input id="on" maxlength="80"></label><label class="f">' + t('phone') + '<input id="oph" type="tel"></label></div><button class="lens pri" type="submit">' + t('create') + '</button><div class="ferr" id="oe"></div></form><div id="ocred"></div></div>' +
+      '<div class="panel tw"><table class="t"><thead><tr><th>' + t('name') + '</th><th>Login</th><th>' + t('n_pl') + '</th><th></th></tr></thead><tbody>' + (o.map(p => '<tr><td>' + esc(p.full_name || '—') + '<div class="m">' + esc(p.phone || '') + '</div></td><td><code>' + esc(p.login || '') + '</code></td><td>' + pc(p.id) + '</td><td style="white-space:nowrap"><button class="lens sm" data-pw="' + p.id + '">' + t('chpw') + '</button> <button class="lens sm bad" data-du="' + p.id + '">' + t('del') + '</button></td></tr>').join('') || '<tr><td colspan="4" class="empty">' + t('noitems') + '</td></tr>') + '</tbody></table></div>';
     $('#og').onclick = () => $('#op').value = gen(10);
     $('#of').onsubmit = async ev => {
       ev.preventDefault(); const login = $('#ol').value.trim().toLowerCase(), pw = $('#op').value; $('#oe').textContent = '';
@@ -78,38 +78,28 @@
   }
   function credBox(login, pw) {
     const txt = 'OshRest Бизнес\n' + location.origin + '/owner/\nЛогин: ' + login + '\nПароль: ' + pw;
-    const b = $('#ocred') || $('#main'); b.insertAdjacentHTML('afterbegin', '<div class="panel" style="border-color:var(--ok);margin-top:.8rem"><b>✅ ' + t('created') + '</b><pre style="white-space:pre-wrap;user-select:all;margin:.5rem 0">' + esc(txt) + '</pre><button class="lens sm" data-copy="' + esc(txt).replace(/\n/g, '&#10;') + '">📋 ' + t('copy') + '</button> <a class="lens sm ok" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent(txt) + '">WhatsApp</a></div>');
+    const b = $('#ocred') || $('#main'); b.insertAdjacentHTML('afterbegin', '<div class="panel" style="border-color:var(--ok);margin-top:.8rem"><b>' + t('created') + '</b><pre style="white-space:pre-wrap;user-select:all;margin:.5rem 0">' + esc(txt) + '</pre><button class="lens sm" data-copy="' + esc(txt).replace(/\n/g, '&#10;') + '">' + t('copy') + '</button> <a class="lens sm ok" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent(txt) + '">WhatsApp</a></div>');
   }
   function pwSheet(uid, login, after) {
-    const s = OSH.sheet('<div class="sp"><h2 style="margin-top:2.4rem">' + t('chpw') + '</h2><p class="m">' + esc(login) + '</p><label class="f">' + t('newpw') + '<div class="sw"><input id="np" minlength="6" value="' + gen(10) + '"><button class="lens sm" id="ng">⟳</button></div></label><div class="ferr" id="ne"></div><button class="lens pri block" id="ns">' + t('save') + '</button></div>');
+    const s = OSH.sheet('<div class="sp"><h2 style="margin-top:2.4rem">' + t('chpw') + '</h2><p class="m">' + esc(login) + '</p><label class="f">' + t('newpw') + '<div class="sw"><input id="np" minlength="6" value="' + gen(10) + '"><button class="lens sm" id="ng"><i class=i-refresh></i></button></div></label><div class="ferr" id="ne"></div><button class="lens pri block" id="ns">' + t('save') + '</button></div>');
     $('#ng', s).onclick = () => $('#np', s).value = gen(10);
-    $('#ns', s).onclick = async () => { const pw = $('#np', s).value; try { await OSH.api('/api/admin/users/' + uid + '/password', 'POST', { password: pw }); OSH.closeSheet(); OSH.toast({ type: 'ok', icon: '✅', text: t('pwdone') }); if (after) await after(); credBox(login, pw); } catch (e) { $('#ne', s).textContent = e.message; } };
+    $('#ns', s).onclick = async () => { const pw = $('#np', s).value; try { await OSH.api('/api/admin/users/' + uid + '/password', 'POST', { password: pw }); OSH.closeSheet(); OSH.toast({ type: 'ok', text: t('pwdone') }); if (after) await after(); credBox(login, pw); } catch (e) { $('#ne', s).textContent = e.message; } };
   }
 
   // ---------- объекты ----------
   function drawPl() {
     const ow = owners(), od = byId(S.profiles);
-    $('#main').innerHTML = '<div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap"><h2 class="sec" style="margin:.6rem 0">' + t('n_pl') + ' (' + S.places.length + ')</h2><button class="lens gold" id="apl" style="margin-left:auto">＋ ' + t('addpl') + '</button></div><p class="m">' + t('seed_note') + '</p><div class="panel tw"><table class="t"><thead><tr><th>' + t('f_name') + '</th><th>' + t('owner_') + '</th><th>' + t('f_active') + '</th><th></th></tr></thead><tbody>' +
-      S.places.map(p => '<tr><td>' + OSH.catIcon(p.category) + ' <b>' + esc(p.name) + '</b><div class="m">' + OSH.regName(p.region) + ' · ' + S.rooms.filter(r => r.place_id === p.id).length + ' ' + t('rooms') + '</div></td><td><select data-own="' + p.id + '" style="min-width:140px"><option value="">' + t('none') + '</option>' + ow.map(o => '<option value="' + o.id + '"' + (p.owner_id === o.id ? ' selected' : '') + '>' + esc(o.full_name || o.login) + '</option>').join('') + '</select></td><td><input type="checkbox" data-act2="' + p.id + '"' + (p.active ? ' checked' : '') + ' style="width:22px;min-height:22px"></td><td style="white-space:nowrap"><button class="lens sm" data-ep="' + p.id + '">✎</button> <button class="lens sm bad" data-dp="' + p.id + '">✖</button></td></tr>').join('') + '</tbody></table></div>';
+    $('#main').innerHTML = '<div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap"><h2 class="sec" style="margin:.6rem 0">' + t('n_pl') + ' (' + S.places.length + ')</h2><button class="lens gold" id="apl" style="margin-left:auto">' + t('addpl') + '</button></div><p class="m">' + t('seed_note') + '</p><div class="panel tw"><table class="t"><thead><tr><th>' + t('f_name') + '</th><th>' + t('owner_') + '</th><th>' + t('f_active') + '</th><th></th></tr></thead><tbody>' +
+      S.places.map(p => '<tr><td>' + OSH.catIcon(p.category) + ' <b>' + esc(p.name) + '</b><div class="m">' + OSH.regName(p.region) + ' · ' + S.rooms.filter(r => r.place_id === p.id).length + ' ' + t('rooms') + (p.price_from ? ' · ' + money(p.price_from) + ' ' + t('som') : '') + '</div></td><td><select data-own="' + p.id + '" style="min-width:140px"><option value="">' + t('none') + '</option>' + ow.map(o => '<option value="' + o.id + '"' + (p.owner_id === o.id ? ' selected' : '') + '>' + esc(o.full_name || o.login) + '</option>').join('') + '</select></td><td><input type="checkbox" data-act2="' + p.id + '"' + (p.active ? ' checked' : '') + ' style="width:22px;min-height:22px"></td><td style="white-space:nowrap"><button class="lens sm" data-ep="' + p.id + '">' + t('edit') + '</button> <button class="lens sm bad" data-dp="' + p.id + '">' + t('del') + '</button></td></tr>').join('') + '</tbody></table></div>';
   }
-  function placeSheet(p) {
-    const isNew = !p; p = p || { category: 'hotel', region: 'osh', active: true, price_from: 0, rating: 0 };
-    const s = OSH.sheet('<div class="sp"><h2 style="margin-top:2.4rem">' + (isNew ? t('addpl') : esc(p.name)) + '</h2><form id="pf"><div class="g2"><label class="f">' + t('f_cat') + '<select id="pc">' + Object.keys(CATALOG.cats).map(k => '<option value="' + k + '"' + (p.category === k ? ' selected' : '') + '>' + OSH.catIcon(k) + ' ' + OSH.catName(k) + '</option>').join('') + '</select></label><label class="f">' + t('f_reg') + '<select id="pr">' + Object.keys(CATALOG.regs).map(k => '<option value="' + k + '"' + (p.region === k ? ' selected' : '') + '>' + OSH.regName(k) + '</option>').join('') + '</select></label></div>' +
-      '<label class="f">' + t('f_name') + '<input id="pn" required value="' + esc(p.name || '') + '"></label><label class="f">' + t('f_desc') + '<textarea id="pd">' + esc(p.description || '') + '</textarea></label><div class="g2"><label class="f">' + t('phone') + '<input id="pph" value="' + esc(p.phone || '') + '"></label><label class="f">' + t('f_price') + '<input id="ppr" type="number" min="0" value="' + (p.price_from || 0) + '"></label></div>' +
-      '<div class="g3"><label class="f">' + t('f_rate') + '<input id="prt" type="number" min="0" max="5" step="0.1" value="' + (p.rating || 0) + '"></label><label class="f">' + t('f_lat') + '<input id="pla" type="number" step="any" value="' + (p.lat == null ? '' : p.lat) + '"></label><label class="f">' + t('f_lng') + '<input id="plo" type="number" step="any" value="' + (p.lng == null ? '' : p.lng) + '"></label></div>' +
-      '<label class="chk"><input type="checkbox" id="pa"' + (p.active ? ' checked' : '') + '> ' + t('f_active') + '</label><button class="lens pri block" type="submit" style="margin-top:.7rem">' + t('save') + '</button></form></div>');
-    $('#pf', s).onsubmit = async ev => {
-      ev.preventDefault(); const rec = { category: $('#pc', s).value, region: $('#pr', s).value, name: $('#pn', s).value.trim(), description: $('#pd', s).value.trim(), phone: $('#pph', s).value.trim(), whatsapp: $('#pph', s).value.replace(/\D/g, ''), price_from: +$('#ppr', s).value || 0, rating: Math.max(0, Math.min(5, +$('#prt', s).value || 0)), lat: $('#pla', s).value === '' ? null : +$('#pla', s).value, lng: $('#plo', s).value === '' ? null : +$('#plo', s).value, active: $('#pa', s).checked };
-      const { data, error } = await (isNew ? sb().from('places').insert(rec) : sb().from('places').update(rec).eq('id', p.id)).select().single(); if (error) return OSH.err(error.message);
-      if (isNew) S.places.push(data); else S.places[S.places.findIndex(x => x.id === p.id)] = data; OSH.closeSheet(); OSH.toast({ type: 'ok', icon: '✅', text: t('saved') }); drawPl();
-    };
-  }
+  const ectx = { get places() { return S.places; }, get rooms() { return S.rooms; }, set rooms(v) { S.rooms = v; }, get owners() { return owners(); }, isAdmin: true, refresh: () => { if (S.v === 'pl') drawPl(); } };
+  const placeSheet = p => OSH.editor.place(ectx, p);
 
   // ---------- заявки ----------
   function drawRq() {
     const pl = byId(S.places), l = S.rf ? S.reqs.filter(r => r.place_id === S.rf) : S.reqs.slice(0, 300);
-    $('#main').innerHTML = '<div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center"><h2 class="sec" style="margin:.6rem 0">' + t('n_rq') + ' (' + S.reqs.length + ')</h2><select id="rfp" style="max-width:260px;margin-left:auto"><option value="">' + t('n_pl') + ': —</option>' + S.places.map(p => '<option value="' + p.id + '"' + (S.rf === p.id ? ' selected' : '') + '>' + esc(p.name) + '</option>').join('') + '</select><button class="lens sm" id="csvr">⬇ ' + t('csv') + '</button></div><div class="panel" id="rl"></div>';
-    $('#rl').innerHTML = l.map(r => OSH.reqHtml(r, { places: pl, rooms: byId(S.rooms.map(x => x)), mode: 'admin' }).replace(/<div class="acts">[\s\S]*<\/div><\/div>$/, '<div class="acts"><button class="lens sm bad" data-dr="' + r.id + '">✖ ' + t('del') + '</button></div></div>')).join('') || '<div class="empty">' + t('noitems') + '</div>';
+    $('#main').innerHTML = '<div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center"><h2 class="sec" style="margin:.6rem 0">' + t('n_rq') + ' (' + S.reqs.length + ')</h2><select id="rfp" style="max-width:260px;margin-left:auto"><option value="">' + t('n_pl') + ': —</option>' + S.places.map(p => '<option value="' + p.id + '"' + (S.rf === p.id ? ' selected' : '') + '>' + esc(p.name) + '</option>').join('') + '</select><button class="lens sm" id="csvr">' + t('csv') + '</button></div><div class="panel" id="rl"></div>';
+    $('#rl').innerHTML = l.map(r => OSH.reqHtml(r, { places: pl, rooms: byId(S.rooms.map(x => x)), mode: 'admin' }).replace(/<div class="acts">[\s\S]*<\/div><\/div>$/, '<div class="acts"><button class="lens sm bad" data-dr="' + r.id + '">' + t('del') + '</button></div></div>')).join('') || '<div class="empty">' + t('noitems') + '</div>';
     $('#rfp').onchange = e => { S.rf = e.target.value; drawRq(); };
     $('#csvr').onclick = () => csv('requests.csv', [['date', 'place', 'kind', 'status', 'tourist', 'phone', 'check_in', 'check_out', 'guests', 'total', 'message']].concat(S.reqs.map(r => [r.created_at, (pl[r.place_id] || {}).name, r.kind, r.status, r.tourist_name, r.tourist_phone, r.d1, r.d2, r.guests, r.total, r.message])));
   }
@@ -118,20 +108,20 @@
   // ---------- туристы ----------
   function drawUs() {
     const u = tourists(), rc = id => S.reqs.filter(r => r.tourist_id === id).length;
-    $('#main').innerHTML = '<div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap"><h2 class="sec" style="margin:.6rem 0">' + t('n_us') + ' (' + u.length + ')</h2><button class="lens sm" id="csvu" style="margin-left:auto">⬇ ' + t('csv') + '</button></div><div class="panel tw"><table class="t"><thead><tr><th>' + t('name') + '</th><th>' + t('phone') + '</th><th>' + t('reg_at') + '</th><th>' + t('n_rq') + '</th><th></th></tr></thead><tbody>' +
-      (u.map(p => '<tr><td>' + esc(p.full_name || '—') + '<div class="m">' + esc(p.login || '') + '</div></td><td>' + (p.phone ? '<a href="' + OSH.telLink(p.phone) + '">' + esc(p.phone) + '</a>' : '') + '</td><td>' + OSH.fdate(p.created_at.slice(0, 10)) + '</td><td>' + rc(p.id) + '</td><td><button class="lens sm bad" data-du="' + p.id + '">✖</button></td></tr>').join('') || '<tr><td colspan="5" class="empty">' + t('noitems') + '</td></tr>') + '</tbody></table></div>';
+    $('#main').innerHTML = '<div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap"><h2 class="sec" style="margin:.6rem 0">' + t('n_us') + ' (' + u.length + ')</h2><button class="lens sm" id="csvu" style="margin-left:auto">' + t('csv') + '</button></div><div class="panel tw"><table class="t"><thead><tr><th>' + t('name') + '</th><th>' + t('phone') + '</th><th>' + t('reg_at') + '</th><th>' + t('n_rq') + '</th><th></th></tr></thead><tbody>' +
+      (u.map(p => '<tr><td>' + esc(p.full_name || '—') + '<div class="m">' + esc(p.login || '') + '</div></td><td>' + (p.phone ? '<a href="' + OSH.telLink(p.phone) + '">' + esc(p.phone) + '</a>' : '') + '</td><td>' + OSH.fdate(p.created_at.slice(0, 10)) + '</td><td>' + rc(p.id) + '</td><td><button class="lens sm bad" data-du="' + p.id + '">' + t('del') + '</button></td></tr>').join('') || '<tr><td colspan="5" class="empty">' + t('noitems') + '</td></tr>') + '</tbody></table></div>';
     $('#csvu').onclick = () => csv('tourists.csv', [['name', 'login', 'phone', 'registered']].concat(u.map(p => [p.full_name, p.login, p.phone, p.created_at])));
   }
 
   // ---------- запросы на сброс пароля ----------
   function drawPw() {
-    $('#main').innerHTML = '<h2 class="sec">' + t('n_pw') + '</h2><div class="panel">' + (S.pw.map(x => { const o = S.profiles.find(p => (p.login || '').toLowerCase() === x.login.trim().toLowerCase() && p.role !== 'admin'); return '<div class="rq"><div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap"><b>🔐 ' + esc(x.login) + '</b><span class="badge ' + (x.status === 'new' ? 'new' : 'ok') + '">' + (x.status === 'new' ? t('s_new') : t('pw_mark')) + '</span><span class="m" style="margin-left:auto">' + OSH.ftime(x.created_at) + '</span></div>' + (o ? '<div class="m">' + esc(o.full_name || '') + ' · ' + esc(o.phone || '') + '</div>' : '') + (x.note ? '<div>💬 ' + esc(x.note) + '</div>' : '') + '<div class="acts">' + (o ? '<button class="lens sm pri" data-pwr="' + x.id + '" data-u="' + o.id + '" data-l="' + esc(o.login) + '">🔑 ' + t('pw_set') + '</button>' : '') + (x.status === 'new' ? '<button class="lens sm" data-pd="' + x.id + '">✓ ' + t('pw_mark') + '</button>' : '') + '</div></div>'; }).join('') || '<div class="empty"><b>🔐</b>' + t('pw_none') + '</div>') + '</div>';
+    $('#main').innerHTML = '<h2 class="sec">' + t('n_pw') + '</h2><div class="panel">' + (S.pw.map(x => { const o = S.profiles.find(p => (p.login || '').toLowerCase() === x.login.trim().toLowerCase() && p.role !== 'admin'); return '<div class="rq"><div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap"><b>' + esc(x.login) + '</b><span class="badge ' + (x.status === 'new' ? 'new' : 'ok') + '">' + (x.status === 'new' ? t('s_new') : t('pw_mark')) + '</span><span class="m" style="margin-left:auto">' + OSH.ftime(x.created_at) + '</span></div>' + (o ? '<div class="m">' + esc(o.full_name || '') + ' · ' + esc(o.phone || '') + '</div>' : '') + (x.note ? '<div>' + esc(x.note) + '</div>' : '') + '<div class="acts">' + (o ? '<button class="lens sm pri" data-pwr="' + x.id + '" data-u="' + o.id + '" data-l="' + esc(o.login) + '">' + t('pw_set') + '</button>' : '') + (x.status === 'new' ? '<button class="lens sm" data-pd="' + x.id + '">' + t('pw_mark') + '</button>' : '') + '</div></div>'; }).join('') || '<div class="empty"><b><i class=i-lock></i></b>' + t('pw_none') + '</div>') + '</div>';
   }
 
   document.addEventListener('click', async e => {
     const T = e.target; let b;
     if ((b = T.closest('nav.tabs [data-v]'))) return go(b.dataset.v);
-    if ((b = T.closest('[data-copy]'))) { try { await navigator.clipboard.writeText(b.dataset.copy); OSH.toast({ type: 'ok', icon: '📋', text: t('copied'), ms: 1800 }); } catch (er) {} return; }
+    if ((b = T.closest('[data-copy]'))) { try { await navigator.clipboard.writeText(b.dataset.copy); OSH.toast({ type: 'ok', text: t('copied'), ms: 1800 }); } catch (er) {} return; }
     if ((b = T.closest('[data-pw]'))) { const p = S.profiles.find(x => x.id === b.dataset.pw); return pwSheet(p.id, p.login); }
     if ((b = T.closest('[data-pwr]'))) { const id = b.dataset.pwr; return pwSheet(b.dataset.u, b.dataset.l, async () => { await sb().from('password_requests').update({ status: 'done' }).eq('id', id); const r = S.pw.find(x => x.id === id); if (r) r.status = 'done'; head(); drawPw(); }); }
     if ((b = T.closest('[data-pd]'))) { const id = b.dataset.pd; await sb().from('password_requests').update({ status: 'done' }).eq('id', id); const r = S.pw.find(x => x.id === id); if (r) r.status = 'done'; head(); return drawPw(); }
@@ -143,7 +133,7 @@
   });
   document.addEventListener('change', async e => {
     const T = e.target;
-    if (T.dataset.own !== undefined) { const { data, error } = await sb().from('places').update({ owner_id: T.value || null }).eq('id', T.dataset.own).select().single(); if (error) return OSH.err(error.message); S.places[S.places.findIndex(x => x.id === data.id)] = data; OSH.toast({ type: 'ok', icon: '✅', text: t('saved'), ms: 1500 }); }
+    if (T.dataset.own !== undefined) { const { data, error } = await sb().from('places').update({ owner_id: T.value || null }).eq('id', T.dataset.own).select().single(); if (error) return OSH.err(error.message); S.places[S.places.findIndex(x => x.id === data.id)] = data; OSH.toast({ type: 'ok', text: t('saved'), ms: 1500 }); }
     if (T.dataset.act2) { const { data, error } = await sb().from('places').update({ active: T.checked }).eq('id', T.dataset.act2).select().single(); if (error) return OSH.err(error.message); S.places[S.places.findIndex(x => x.id === data.id)] = data; }
   });
 })();

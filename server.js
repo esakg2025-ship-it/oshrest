@@ -42,6 +42,8 @@ async function requireAdmin(req, res) {
   if (!u || u.role !== 'admin') { send(res, 403, { error: 'Только для главного администратора' }); return null; }
   return u;
 }
+// Профиль задаём явно (не полагаясь на триггер): роль всегда соответствует тому, как создан аккаунт
+async function setProfile(id, p) { return sb('POST', '/rest/v1/profiles?on_conflict=id', Object.assign({ id }, p), { Prefer: 'resolution=merge-duplicates,return=minimal' }); }
 async function findUserByEmail(email) {
   for (let page = 1; page < 20; page++) {
     const r = await sb('GET', `/auth/v1/admin/users?page=${page}&per_page=200`);
@@ -93,6 +95,7 @@ async function api(req, res, url) {
     const phone = email.endsWith('@phone.oshrest.local') ? '+' + email.split('@')[0] : clean(b.phone, 30);
     const r = await sb('POST', '/auth/v1/admin/users', { email, password: b.password, email_confirm: true, app_metadata: { role: 'tourist' }, user_metadata: { full_name: name, login, phone } });
     if (!r.ok) return send(res, r.status === 422 ? 409 : 400, { error: r.status === 422 ? 'Такой аккаунт уже есть. Войдите.' : 'Не удалось зарегистрировать' });
+    await setProfile(r.data.id, { role: 'tourist', login, full_name: name, phone });
     return send(res, 200, { ok: true });
   }
 
@@ -117,6 +120,7 @@ async function api(req, res, url) {
       if (!strongEnough(b.password)) return send(res, 400, { error: 'Пароль: от 6 символов' });
       const r = await sb('POST', '/auth/v1/admin/users', { email: login + '@owner.oshrest.local', password: b.password, email_confirm: true, app_metadata: { role: 'owner' }, user_metadata: { full_name: clean(b.name, 80), login, phone: clean(b.phone, 30) } });
       if (!r.ok) return send(res, r.status === 422 ? 409 : 400, { error: r.status === 422 ? 'Такой логин уже занят' : 'Не удалось создать' });
+      await setProfile(r.data.id, { role: 'owner', login, full_name: clean(b.name, 80), phone: clean(b.phone, 30) });
       return send(res, 200, { ok: true, id: r.data.id });
     }
     let m;
